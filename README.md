@@ -50,7 +50,7 @@ $ python Self_Help_Words.py
 
 
 ## excel  配置
-<b>灰色部分需保留，其他文字部分任意修改、增加</b>
+<div><b>灰色部分需保留，其他文字部分任意修改、增加</b></div>
 ![excel](./img/excel.png)
 
 
