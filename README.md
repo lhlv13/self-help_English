@@ -20,20 +20,20 @@
 
 ---
 ## 操作方法
-<b>空白鍵 : </b> 顯示中文。
-<b>鍵 a : </b> 內心默念的答案對了，前往下一個。
-<b>鍵 d : </b> 內心默念的答案錯了，前往下一個。
-<b>鍵 m : </b> 回主選單。
+<div><b>空白鍵 : </b> 顯示中文。</div>
+<div><b>鍵 a : </b> 內心默念的答案對了，前往下一個。</div>
+<div><b>鍵 d : </b> 內心默念的答案錯了，前往下一個。</div>
+<div><b>鍵 m : </b> 回主選單。</div>
 
 
 ---
 ## 呈現
 ### Chapter Mode (練習模式，不會記錄)
-
+![chapter mode](./img/chapterMode.gif)
 
 ### Box Mode (練習模式，不會記錄)
-
+![box mode](./img/boxMode.gif)
 
 ### Forget Curve Mode (遺忘曲線模式，紀錄)
-
+![forget curve mode](./img/forgetMode.gif)
 
