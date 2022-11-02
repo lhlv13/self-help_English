@@ -2,3 +2,4 @@ pygame
 pandas
 numpy
 os
+urllib

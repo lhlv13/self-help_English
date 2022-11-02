@@ -12,12 +12,42 @@ import random
 import copy
 import numpy as np
 import os 
+import urllib
+
 
 if not os.path.isdir("./temp"):
     os.mkdir("./temp")
 
 if not os.path.isdir("./backup"):
     os.mkdir("./backup")
+
+
+
+class Sound():
+    """ 英文單字發音爬蟲 """
+    def __init__(self, api="http://dict.youdao.com/dictvoice?type=0&audio="):
+        self.api = api
+        self.path = "./mp3/"
+        self.extension = "mp3"
+        self.word = None
+        
+        if not os.path.isdir(self.path):
+            os.mkdir(self.path)
+    
+    def loadMp3(self, word):
+        url = self.api + word
+        path = os.path.join(self.path, f"{word}.{self.extension}")
+        urllib.request.urlretrieve(url, path)
+        return self 
+    
+    def speak(self, word):
+        word_path = os.path.join(self.path, f"{word}.{self.extension}")
+        if not os.path.isfile(word_path):
+            self.loadMp3(word)
+            
+        pygame.mixer.init()
+        pygame.mixer.music.load(word_path)
+        pygame.mixer.music.play()
 
 
 class WordsData():
@@ -119,6 +149,10 @@ class WordsInterface(WordsData):
         self.clock = pygame.time.Clock()
         self.font_name = self.__config["font_name"]  ## 字形
         
+        
+        
+        self.__sound = Sound() ## 物件
+        self.__current_word = None
         ##
         self.__words = None
         self.__box_i = None
@@ -206,6 +240,7 @@ class WordsInterface(WordsData):
     def showMain(self, word):
         x, y, _ = self.setGrid(grid = 12)
         en, ch, part = word[1], word[2], word[3]
+        self.__current_word = en ### 儲存當前單字 供發音使用
         self.draw_text(en, size=self.__config["other_language_size"], x=self.WIDTH//2, y=y*5, color=(240,240,0))
         if self.__isShow:
             self.draw_text(f"{ch} ({part})", size=self.__config["chinese_size"], x=self.WIDTH//2, y=y*9, color=(240,240,0))
@@ -463,6 +498,13 @@ class WordsInterface(WordsData):
                         self.save()
                     is_running = False
                     
+            
+            if key_pressed[pygame.K_s]:
+                try:
+                    self.__sound.speak(self.__current_word)
+                except:
+                    pass
+                
             
             
             ## 模式
