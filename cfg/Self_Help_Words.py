@@ -14,6 +14,8 @@ import numpy as np
 import os 
 import urllib
 
+PATH = r"C:\Users\Yuyi\OneDrive\桌面\言\self-help_ENG\cfg"
+os.chdir(PATH)
 
 if not os.path.isdir("./temp"):
     os.mkdir("./temp")
@@ -37,7 +39,8 @@ class Sound():
     def loadMp3(self, word):
         url = self.api + word
         path = os.path.join(self.path, f"{word}.{self.extension}")
-        urllib.request.urlretrieve(url, path)
+        if not os.path.isfile(path):
+            urllib.request.urlretrieve(url, path)
         return self 
     
     def speak(self, word):
@@ -48,6 +51,7 @@ class Sound():
         pygame.mixer.init()
         pygame.mixer.music.load(word_path)
         pygame.mixer.music.play()
+    
 
 
 class WordsData():
@@ -83,6 +87,19 @@ class WordsData():
         self.dataframe = df
         self.box = box         ##  [0:[], 1:[], 2:[], 3:[], 4:[]] 
         self.chapter = chapter ##  ["第0章" : [], ... ]
+
+
+        ## 儲存音檔
+        # self.__sound = Sound()
+        # for i in range(len(self.dataframe)):
+        #     en = self.dataframe[i][1].strip()
+        #     if en!="0" or en!=0:
+        #         try:
+        #             self.__sound.loadMp3(en)
+        #         except:
+        #             print(en)
+        # print("聲音儲存完成!!")
+            
         
     def getConfig(self):
         return self.__config 
@@ -160,6 +177,7 @@ class WordsInterface(WordsData):
         self.__isShow = False
         self.__count = 1
         self.__box_counts = []  ## 紀錄每個箱子的數量，用以控制機率
+        self.pre_word_list = [] ## 紀錄上個word，避免連續重複單字用
         
         for i in range(len(self.box)):
             self.__box_counts.append(len(self.box[i]))
@@ -240,7 +258,7 @@ class WordsInterface(WordsData):
     def showMain(self, word):
         x, y, _ = self.setGrid(grid = 12)
         en, ch, part = word[1], word[2], word[3]
-        self.__current_word = en ### 儲存當前單字 供發音使用
+        self.__current_word = en.strip() ### 儲存當前單字 供發音使用
         self.draw_text(en, size=self.__config["other_language_size"], x=self.WIDTH//2, y=y*5, color=(240,240,0))
         if self.__isShow:
             self.draw_text(f"{ch} ({part})", size=self.__config["chinese_size"], x=self.WIDTH//2, y=y*9, color=(240,240,0))
@@ -428,12 +446,21 @@ class WordsInterface(WordsData):
     def probability(self):
         """ self.__box_counts : 箱子內的個數"""
         total = sum(self.__box_counts[1:])
-        if total < 100:
-            return np.random.choice(np.array([0,1,2,3,4]), p=np.array([0.85, 0.05, 0.05, 0.03, 0.02]))
+        if self.__box_counts[0] > 2:
+            return np.random.choice(np.array([0,1,2,3,4]), p=np.array([0.95, 0.02, 0.01, 0.01, 0.01]))
             
         
         else:
             return np.random.choice(np.array([0,1,2,3,4]), p=np.array([0.3, 0.25, 0.2, 0.15, 0.1]))
+    def __addpreWord(self, word, max_size=20):
+        """ 增加單字到self.pre_word裡面 """
+        if word in self.pre_word_list:
+            return
+        # print(self.pre_word_list)
+        if len(self.pre_word_list) > max_size:
+            self.pre_word_list.pop(0)
+        self.pre_word_list.append(word)
+        pass
         
     
     def __forgetCurve(self, key_pressed, is_init):
@@ -444,6 +471,10 @@ class WordsInterface(WordsData):
                 if size == 0:
                     continue
                 self.__index = random.randint(0, size-1)
+                ## 避免連續重複
+                word = self.box[self.__box_i][self.__index][1]
+                if word in self.pre_word_list:
+                    continue
                 break
             is_init = False
         
@@ -455,6 +486,8 @@ class WordsInterface(WordsData):
             word = self.box[self.__box_i][self.__index]
             en, ch, part, correct, error, bx =\
                 word[1], word[2], word[3], word[4], word[5], word[6]
+                
+            self.__addpreWord(en)  ## 避免連續重複
             self.showInfo(correct=correct, error=error, box=bx, number=self.__count)
             self.showMain(word)
             if key_pressed[pygame.K_SPACE]:
@@ -504,7 +537,6 @@ class WordsInterface(WordsData):
                     self.__sound.speak(self.__current_word)
                 except:
                     pass
-                
             
             
             ## 模式
